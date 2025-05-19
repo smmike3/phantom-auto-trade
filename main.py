@@ -1,26 +1,32 @@
-
 from fastapi import FastAPI, Request
 import httpx
-import os
+import json
 
 app = FastAPI()
-
-DYDX_API_URL = "https://api.dydx.exchange/v3/orders"
 
 @app.post("/webhook")
 async def webhook_handler(req: Request):
     payload = await req.json()
+    print("🔥 Incoming webhook payload:", json.dumps(payload, indent=2))
+
+    # Filter for Phantom control flag
     if payload.get("phantom_control"):
-        bot = payload.get("bot", "Unknown Bot")
-        asset = payload.get("asset", "BTCUSD")
-        timeframe = payload.get("timeframe", "5m")
-        exchange = payload.get("exchange", "dydx")
-        entry = payload.get("entry", {})
+        bot = payload.get("bot", "Unknown")
+        side = payload.get("side", "buy")
+        symbol = payload.get("symbol", "BTCUSD")
+        price = payload.get("price", "0.00")
 
         # Simulate trade execution
-        print(f"[PHANTOM] Executing {bot} on {exchange}: {entry}")
+        print(f"👻 PHANTOM: Executing {side.upper()} on {symbol} at ${price} via {bot}")
+        
+        # Later: Call real dYdX trade function here
 
-        # You can expand this block to use real APIs like dYdX here.
+        return {
+            "status": "executed",
+            "bot": bot,
+            "side": side,
+            "symbol": symbol,
+            "price": price
+        }
 
-        return {"status": "executed", "bot": bot, "entry": entry}
     return {"status": "ignored"}
